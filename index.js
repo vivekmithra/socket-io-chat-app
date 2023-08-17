@@ -6,7 +6,6 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Serve static files from the "public" directory
 app.use(express.static(__dirname + '/public'));
 
 // Handle incoming connections
@@ -15,7 +14,7 @@ io.on('connection', (socket) => {
 
   // Listen for chat messages
   socket.on('chat message', (message) => {
-    io.emit('chat message', message); // Broadcast the message to all connected clients
+    io.emit('chat message', { text: message, sender: socket.id }); // Include sender's socket ID
   });
 
   // Handle disconnections
