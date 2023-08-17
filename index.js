@@ -8,17 +8,26 @@ const io = socketIo(server);
 
 app.use(express.static(__dirname + '/public'));
 
+// Store usernames
+const userNames = {};
+
 // Handle incoming connections
 io.on('connection', (socket) => {
   console.log('A user connected');
 
+  // Listen for username submission
+  socket.on('set username', (username) => {
+    userNames[socket.id] = username;
+  });
+
   // Listen for chat messages
   socket.on('chat message', (message) => {
-    io.emit('chat message', { text: message, sender: socket.id }); // Include sender's socket ID
+    io.emit('chat message', { text: message.text, sender: userNames[socket.id] });
   });
 
   // Handle disconnections
   socket.on('disconnect', () => {
+    delete userNames[socket.id];
     console.log('A user disconnected');
   });
 });

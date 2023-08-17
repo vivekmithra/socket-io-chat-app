@@ -1,20 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Socket.IO Chat App</title>
-</head>
+<!-- ... Previous code ... -->
 <body>
+  <div class="chat-container">
+    <div class="chat-header">Socket.IO Chat</div>
+    <div id="username-container" class="username-container">
+      <input id="username-input" class="username-input" placeholder="Enter your username..." />
+      <button id="username-submit" class="username-submit">Submit</button>
+    </div>
+    <ul id="messages" class="chat-messages">
+      <!-- Messages will be dynamically added here -->
+    </ul>
+    <form id="form" class="chat-form">
+      <input id="input" class="chat-input" autocomplete="off" placeholder="Type a message..." />
+      <button class="chat-send-button">Send</button>
+    </form>
+  </div>
 
   <style>
+
+/* Reset some default styles */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background-color: #f5f5f5;
 }
 
+/* Chat container */
 .chat-container {
   max-width: 400px;
   margin: 0 auto;
@@ -23,6 +33,7 @@ body {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Chat header */
 .chat-header {
   background-color: #075e54;
   color: white;
@@ -31,6 +42,7 @@ body {
   text-align: center;
 }
 
+/* Messages container */
 .chat-messages {
   list-style-type: none;
   padding: 0;
@@ -40,27 +52,34 @@ body {
   padding: 10px;
 }
 
+/* Individual messages */
 .chat-message {
   padding: 8px;
   border-radius: 5px;
   margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Align sender messages to the right */
 }
 
+/* Sent messages */
 .sent-message {
   background-color: #DCF8C6;
-  align-self: flex-end;
 }
 
+/* Received messages */
 .received-message {
   background-color: #EDEDED;
-  align-self: flex-start;
+  justify-content: flex-start; /* Align receiver messages to the left */
 }
 
+/* Chat form */
 .chat-form {
   display: flex;
   padding: 10px;
 }
 
+/* Input field */
 .chat-input {
   flex: 1;
   padding: 8px;
@@ -69,6 +88,7 @@ body {
   margin-right: 10px;
 }
 
+/* Send button */
 .chat-send-button {
   background-color: #075e54;
   color: white;
@@ -83,46 +103,81 @@ body {
   background-color: #128c7e;
 }
 
+/* Username input container */
+.username-container {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Username input field */
+.username-input {
+  padding: 5px;
+}
+
+/* Username submit button */
+.username-submit {
+  background-color: #075e54;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.username-submit:hover {
+  background-color: #128c7e;
+}
+
+/* Username styling in messages */
+.username {
+  font-weight: bold;
+  color: #333;
+  margin-right: 5px;
+}
 
 
   </style>
-  <div class="chat-container">
-    <div class="chat-header">Socket.IO Chat</div>
-    <ul id="messages" class="chat-messages">
-      <!-- Messages will be dynamically added here -->
-    </ul>
-    <form id="form" class="chat-form">
-      <input id="input" class="chat-input" autocomplete="off" placeholder="Type a message..." />
-      <button class="chat-send-button">Send</button>
-    </form>
-  </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <!-- Update the existing JavaScript code -->
-<script>
-  $(function () {
-    const socket = io();
+  <script>
+    $(function () {
+      const socket = io();
+      let username = '';
 
-    $('form').submit(function () {
-      const message = $('#input').val();
-      if (message.trim() !== '') {
-        socket.emit('chat message', message);
-        $('#input').val('');
-      }
-      return false;
+      // Handle username submission
+      $('#username-submit').click(function () {
+        const inputUsername = $('#username-input').val();
+        if (inputUsername.trim() !== '') {
+          username = inputUsername;
+          socket.emit('set username', username); // Emit the username to the server
+          $('#username-container').hide();
+        }
+      });
+
+      $('form').submit(function () {
+        const message = $('#input').val();
+        if (message.trim() !== '') {
+          socket.emit('chat message', { text: message });
+          $('#input').val('');
+        }
+        return false;
+      });
+
+      socket.on('chat message', function (message) {
+        const messageClass = username === message.sender ? 'sent-message' : 'received-message';
+        const $messageElement = $('<li>').addClass('chat-message').addClass(messageClass);
+
+        const $usernameElement = $('<span>').addClass('username').text(message.sender + ': ');
+        $messageElement.append($usernameElement);
+
+        const $messageTextElement = $('<span>').text(message.text);
+        $messageElement.append($messageTextElement);
+
+        $('#messages').append($messageElement);
+
+        $('#messages').scrollTop($('#messages')[0].scrollHeight);
+      });
     });
-
-    socket.on('chat message', function (message) {
-      const messageClass = socket.id === message.sender ? 'sent-message' : 'received-message';
-      const $messageElement = $('<li>').addClass('chat-message').addClass(messageClass).text(message.text);
-      $('#messages').append($messageElement);
-
-      // Scroll to the bottom of the messages container
-      $('#messages').scrollTop($('#messages')[0].scrollHeight);
-    });
-  });
-</script>
-
+  </script>
 </body>
 </html>
