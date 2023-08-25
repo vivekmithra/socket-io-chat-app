@@ -1,4 +1,3 @@
-<!-- ... Previous code ... -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +22,13 @@
     </form>
   </div>
 
-
+  <div id="floating-window" class="floating-window">
+    <div class="command-list">
+      <div class="command">/clear - Clear the chat</div>
+      <div class="command">/help - Display available commands</div>
+      <!-- Add more command descriptions here -->
+    </div>
+  </div>
 
   
 
@@ -45,6 +50,11 @@ const emojiReplacements = {
     $(function () {
       const socket = io();
       let username = '';
+    
+       // Toggle the floating window visibility
+    $('#help-button').click(function () {
+      $('#floating-window').toggleClass('show');
+    });
 
       // Handle username submission
       $('#username-submit').click(function () {
@@ -59,9 +69,12 @@ const emojiReplacements = {
       $('form').submit(function () {
         const message = $('#input').val();
         if (message.trim() !== '') {
-           const modifiedMessage = replaceKeywordsWithEmojis(message);
-          socket.emit('chat message', { text: modifiedMessage });
-          //socket.emit('chat message', { text: message });
+          if (message.startsWith('/')) {
+            executeSlashCommand(message);
+          } else {
+            const modifiedMessage = replaceKeywordsWithEmojis(message);
+            socket.emit('chat message', { text: modifiedMessage });
+          }
           $('#input').val('');
         }
         return false;
@@ -81,6 +94,40 @@ const emojiReplacements = {
 
         $('#messages').scrollTop($('#messages')[0].scrollHeight);
       });
+
+      function executeSlashCommand(command) {
+      const parts = command.split(' ');
+      const action = parts[0].toLowerCase();
+      switch (action) {
+        case '/clear':
+          clearChat();
+          break;
+        case '/help':
+          displayHelp();
+          break;
+        case '/random':
+          generateRandomNumber();
+          break;
+        // Add more slash commands and actions here
+        default:
+          // Handle unknown command
+          break;
+      }
+    }
+
+    function displayHelp() {
+      const helpMessage = `
+        Available commands:
+        /clear - Clear the chat
+        /help - Display available commands
+        /random - Generate a random number between 0 and 10
+      `;
+      $('#floating-window').addClass('show').html(helpMessage);
+    }
+
+      function clearChat() {
+        $('#messages').empty();
+      }
       
       function replaceKeywordsWithEmojis(text) {
         for (const keyword in emojiReplacements) {
@@ -89,6 +136,20 @@ const emojiReplacements = {
         }
         return text;
       }
+
+      function generateRandomNumber() {
+      const min = 0;
+      const max = 10;
+      const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+      displaySystemMessage(`Random number: ${randomNumber}`);
+    }
+
+    function displaySystemMessage(message) {
+      const $messageElement = $('<li>').addClass('system-message').text(message);
+      $('#messages').append($messageElement);
+      $('#messages').scrollTop($('#messages')[0].scrollHeight);
+    }
+
     });
   </script>
 </body>

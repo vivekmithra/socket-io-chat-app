@@ -113,4 +113,33 @@ body {
     color: #333;
     margin-right: 5px;
   }
+
+  /* ... Previous styles ... */
+.floating-window {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    display: none;
+    max-height: 200px;
+    overflow-y: auto;
+    transition: display 0.3s;
+  }
+  .floating-window.show {
+    display: block;
+  }
+  .command-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .command {
+    margin-bottom: 5px;
+    font-size: 14px;
+  }
+  /* ... Rest of the styles ... */
+  
   
